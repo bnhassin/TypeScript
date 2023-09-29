@@ -7942,6 +7942,7 @@ export interface CompilerHost extends ModuleResolutionHost {
         options: CompilerOptions,
         containingSourceFile: SourceFile,
         reusedNames: readonly StringLiteralLike[] | undefined,
+        ambientModuleNames: readonly StringLiteralLike[] | undefined,
     ): readonly ResolvedModuleWithFailedLookupLocations[];
     resolveTypeReferenceDirectiveReferences?<T extends FileReference | string>(
         typeDirectiveReferences: readonly T[],
@@ -7982,6 +7983,26 @@ export interface CompilerHost extends ModuleResolutionHost {
     /** @internal */ getBuildInfo?(fileName: string, configFilePath: string | undefined): BuildInfo | undefined;
 
     jsDocParsingMode?: JSDocParsingMode;
+}
+
+/** @internal */
+export interface CompilerHostSupportingResolutionCache {
+    onReusedModuleResolutions?(
+        reusedNames: readonly StringLiteralLike[] | undefined,
+        containingSourceFile: SourceFile,
+        redirectedReference: ResolvedProjectReference | undefined,
+        options: CompilerOptions,
+        ambientModuleNames: readonly StringLiteralLike[] | undefined,
+    ): void;
+    onReusedTypeReferenceDirectiveResolutions?<T extends FileReference | string>(
+        reusedNames: readonly T[] | undefined,
+        containingSourceFile: SourceFile | undefined,
+        redirectedReference: ResolvedProjectReference | undefined,
+        options: CompilerOptions,
+    ): void;
+}
+/** @internal */
+export interface CompilerHost extends CompilerHostSupportingResolutionCache {
 }
 
 /** true if --out otherwise source file name *
