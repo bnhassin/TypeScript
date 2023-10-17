@@ -1449,7 +1449,11 @@ export abstract class Project implements LanguageServiceHost, ModuleResolutionHo
             // (can reuse cached imports for files that were not changed)
             // 4. compilation settings were changed in the way that might affect module resolution - drop all caches and collect all data from the scratch
             if (hasNewProgram || changedFiles.length) {
-                this.lastCachedUnresolvedImportsList = getUnresolvedImports(this.program!, this.cachedUnresolvedImportsPerFile);
+                this.lastCachedUnresolvedImportsList = getUnresolvedImports(
+                    this.program!,
+                    this.cachedUnresolvedImportsPerFile,
+                    s => this.writeLog(s),
+                );
             }
 
             this.enqueueInstallTypingsForProject(hasAddedorRemovedFiles);
@@ -2346,8 +2350,13 @@ export abstract class Project implements LanguageServiceHost, ModuleResolutionHo
     }
 }
 
-function getUnresolvedImports(program: Program, cachedUnresolvedImportsPerFile: Map<Path, readonly string[]>): SortedReadonlyArray<string> {
+function getUnresolvedImports(
+    program: Program,
+    cachedUnresolvedImportsPerFile: Map<Path, readonly string[]>,
+    writeLog: (s: string) => void,
+): SortedReadonlyArray<string> {
     const sourceFiles = program.getSourceFiles();
+    writeLog(`getUnresolvedImports:: Files:: ${sourceFiles.length}`);
     tracing?.push(tracing.Phase.Session, "getUnresolvedImports", { count: sourceFiles.length });
     const ambientModules = program.getTypeChecker().getAmbientModules().map(mod => stripQuotes(mod.getName()));
     const result = sortAndDeduplicate(flatMap(sourceFiles, sourceFile =>
@@ -2356,8 +2365,10 @@ function getUnresolvedImports(program: Program, cachedUnresolvedImportsPerFile: 
             sourceFile,
             ambientModules,
             cachedUnresolvedImportsPerFile,
+            writeLog,
         )));
     tracing?.pop();
+    writeLog(`getUnresolvedImports:: Files:: ${sourceFiles.length} Done: ${JSON.stringify(result)}`);
     return result;
 }
 function extractUnresolvedImportsFromSourceFile(
@@ -2365,6 +2376,7 @@ function extractUnresolvedImportsFromSourceFile(
     file: SourceFile,
     ambientModules: readonly string[],
     cachedUnresolvedImportsPerFile: Map<Path, readonly string[]>,
+    writeLog: (s: string) => void,
 ): readonly string[] {
     return getOrUpdate(cachedUnresolvedImportsPerFile, file.path, () => {
         let unresolvedImports: string[] | undefined;
@@ -2378,6 +2390,7 @@ function extractUnresolvedImportsFromSourceFile(
                 unresolvedImports = append(unresolvedImports, parsePackageName(name).packageName);
             }
         }, file);
+        writeLog(`extractUnresolvedImportsFromSourceFile:: ${file.path}:: ${JSON.stringify(unresolvedImports || emptyArray)}`);
         return unresolvedImports || emptyArray;
     });
 }
