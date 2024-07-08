@@ -275,7 +275,6 @@ import {
     removeSuffix,
     resolutionExtensionIsTSOrJson,
     ResolutionMode,
-    ResolutionWithFailedLookupLocations,
     resolveConfigFileProjectName,
     ResolvedConfigFileName,
     ResolvedModuleFull,
@@ -1968,6 +1967,7 @@ export function createProgram(rootNamesOrOptions: readonly string[] | CreateProg
         getResolvedProjectReferenceByPath,
         forEachResolvedProjectReference,
         isSourceOfProjectReferenceRedirect,
+        getRedirectReferenceForResolution,
         getRedirectReferenceForResolutionFromSourceOfProject,
         emitBuildInfo,
         fileExists,
@@ -4156,7 +4156,7 @@ export function createProgram(rootNamesOrOptions: readonly string[] | CreateProg
                 resolveModuleNamesReusingOldState(moduleNames, file);
             Debug.assert(resolutions.length === moduleNames.length);
             const optionsForFile = redirectedReference?.commandLine.options || options;
-            const resolutionsInFile = createModeAwareCache<ResolutionWithFailedLookupLocations>();
+            const resolutionsInFile = createModeAwareCache<ResolvedModuleWithFailedLookupLocations>();
             (resolvedModules ??= new Map()).set(file.path, resolutionsInFile);
             for (let index = 0; index < moduleNames.length; index++) {
                 const resolution = resolutions[index].resolvedModule;
