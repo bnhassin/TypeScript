@@ -270,4 +270,4 @@ Be sure to validate the changes carefully -- apparently unrelated changes to bas
 All strings the user may see are stored in [`diagnosticMessages.json`](./src/compiler/diagnosticMessages.json).
 If you make changes to it, run `hereby generate-diagnostics` to push them to the `Diagnostic` interface in `diagnosticInformationMap.generated.ts`.
 
-See [coding guidelines on diagnostic messages](https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines#diagnostic-messages).
+See [coding guidelines on diagnostic messages](https://github.com/Microsoft/TypeScript/wiki/Coding-guidelines#diagnostic-messages). 
